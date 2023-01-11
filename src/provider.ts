@@ -1,7 +1,14 @@
 import {
   createSignature,
   getEthAddressFromKMS,
-} from "@rumblefishdev/eth-signer-kms";
+} from "@yoheinishikubo/eth-signer-kms";
+
+import {
+  getPublicKey,
+  getEthereumAddress,
+  requestKmsSignature,
+  determineCorrectV
+} from 'ethers-gcp-kms-signer/dist/util/gcp-kms-utils'
 
 import { KMS } from "aws-sdk";
 import { BigNumber, utils } from "ethers";
@@ -10,16 +17,9 @@ import { rpcTransactionRequest } from "hardhat/internal/core/jsonrpc/types/input
 import { validateParams } from "hardhat/internal/core/jsonrpc/types/input/validation";
 import { ProviderWrapperWithChainId } from "hardhat/internal/core/providers/chainId";
 import { EIP1193Provider, RequestArguments } from "hardhat/types";
+import { GcpKmsSignerCredentials } from "./type-extensions";
 
 import { toHexString } from "./utils";
-
-export interface GcpKmsSignerCredentials {
-  projectId: string;
-  locationId: string;
-  keyRingId: string;
-  keyId: string;
-  keyVersion: string;
-}
 
 export class KMSSigner extends ProviderWrapperWithChainId {
   public kmsKeyId: string;
@@ -151,12 +151,7 @@ export class GCPSigner extends ProviderWrapperWithChainId {
 
       const unsignedTx = utils.serializeTransaction(baseTx);
       const hash = keccak256(utils.arrayify(unsignedTx));
-      const sig = await createSignature({
-        kmsInstance: this.kmsInstance,
-        keyId: this.kmsKeyId,
-        message: hash,
-        address: sender,
-      });
+      const sig = await this._signDigest(hash);
 
       const rawTx = utils.serializeTransaction(baseTx, sig);
 
@@ -176,10 +171,9 @@ export class GCPSigner extends ProviderWrapperWithChainId {
 
   private async _getSender(): Promise<string> {
     if (!this.ethAddress) {
-      this.ethAddress = await getEthAddressFromKMS({
-        keyId: this.kmsKeyId,
-        kmsInstance: this.kmsInstance,
-      });
+
+      const publicKey = await getPublicKey(this.kmsCredentials)
+      this.ethAddress = await getEthereumAddress(publicKey)
     }
     return this.ethAddress;
   }
@@ -191,5 +185,17 @@ export class GCPSigner extends ProviderWrapperWithChainId {
     });
 
     return BigNumber.from(response).toNumber();
+  }
+
+  async _signDigest(digestString: string): Promise<string> {
+    const digestBuffer = Buffer.from(utils.arrayify(digestString))
+    const sig = await requestKmsSignature(digestBuffer, this.kmsCredentials)
+    const ethAddr = await this._getSender()
+    const { v } = determineCorrectV(digestBuffer, sig.r, sig.s, ethAddr)
+    return utils.joinSignature({
+      v,
+      r: `0x${sig.r.toString('hex')}`,
+      s: `0x${sig.s.toString('hex')}`
+    })
   }
 }

@@ -62,4 +62,4 @@ typings/
 # environment variables
 .env
 yarn.lock
-# .npmrc
+.npmrc
