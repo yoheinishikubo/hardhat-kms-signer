@@ -19,10 +19,13 @@ jobs:
         with:
           node-version: 14
           registry-url: https://npm.pkg.github.com
-      - uses: bduff9/use-npmrc@v1.1
-        with:
-          dot-npmrc: ${{ secrets.DOT_NPMRC }}
+      # - uses: bduff9/use-npmrc@v1.1
+      #   with:
+      #     dot-npmrc: ${{ secrets.DOT_NPMRC }}
       - run: npm ci
+        env:
+          AUTH_TOKEN: ${{ secrets.AUTH_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       # - run: npm publish
       - run: npx can-npm-publish --verbose && npm publish || echo "No need to publish"
         env:
