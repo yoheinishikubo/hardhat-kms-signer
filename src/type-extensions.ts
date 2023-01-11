@@ -18,19 +18,19 @@ declare module "hardhat/types/config" {
 
   export interface HardhatNetworkUserConfig {
     kmsKeyId?: string;
-    cpKmsSignerCredentials?: GcpKmsSignerCredentials;
+    gcpKmsSignerCredentials?: GcpKmsSignerCredentials;
     minMaxFeePerGas?: string | number;
     minMaxPriorityFeePerGas?: string | number;
   }
   export interface HttpNetworkConfig {
     kmsKeyId?: string;
-    cpKmsSignerCredentials?: GcpKmsSignerCredentials;
+    gcpKmsSignerCredentials?: GcpKmsSignerCredentials;
     minMaxFeePerGas?: string | number;
     minMaxPriorityFeePerGas?: string | number;
   }
   export interface HardhatNetworkConfig {
     kmsKeyId?: string;
-    cpKmsSignerCredentials?: GcpKmsSignerCredentials;
+    gcpKmsSignerCredentials?: GcpKmsSignerCredentials;
     minMaxFeePerGas?: string | number;
     minMaxPriorityFeePerGas?: string | number;
   }

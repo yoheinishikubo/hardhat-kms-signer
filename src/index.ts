@@ -10,7 +10,7 @@ import {
 } from "hardhat/types";
 
 import { AutomaticGasPriceProvider } from "./gasProvider";
-import { KMSSigner } from "./provider";
+import { KMSSigner, GCPSigner } from "./provider";
 import "./type-extensions";
 
 extendConfig(
@@ -26,6 +26,9 @@ extendConfig(
       const network = userNetworks[networkName]!;
       if (network.kmsKeyId) {
         config.networks[networkName].kmsKeyId = network.kmsKeyId;
+      }
+      if (network.gcpKmsSignerCredentials){
+        config.networks[networkName].gcpKmsSignerCredentials = network.gcpKmsSignerCredentials;
       }
     }
   }
@@ -44,6 +47,32 @@ extendEnvironment((hre) => {
     wrappedProvider = new KMSSigner(
       eip1193Provider,
       hre.network.config.kmsKeyId
+    );
+    wrappedProvider = new AutomaticGasProvider(
+      wrappedProvider,
+      hre.network.config.gasMultiplier
+    );
+    wrappedProvider = new AutomaticGasPriceProvider(
+      wrappedProvider,
+      hre.network.config.minMaxFeePerGas,
+      hre.network.config.minMaxPriorityFeePerGas
+    );
+    hre.network.provider = new BackwardsCompatibilityProviderAdapter(
+      wrappedProvider
+    );
+  }
+  if (hre.network.config.gcpKmsSignerCredentials !== undefined) {
+    const httpNetConfig = hre.network.config as HttpNetworkUserConfig;
+    const eip1193Provider = new HttpProvider(
+      httpNetConfig.url!,
+      hre.network.name,
+      httpNetConfig.httpHeaders,
+      httpNetConfig.timeout
+    );
+    let wrappedProvider: EIP1193Provider;
+    wrappedProvider = new GCPSigner(
+      eip1193Provider,
+      hre.network.config.gcpKmsSignerCredentials
     );
     wrappedProvider = new AutomaticGasProvider(
       wrappedProvider,
