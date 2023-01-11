@@ -22,7 +22,6 @@ jobs:
       - uses: bduff9/use-npmrc@v1.1
         with:
           dot-npmrc: ${{ secrets.DOT_NPMRC }}
-      dot-npmrc: ${{ secrets.DOT_NPMRC }}
       - run: npm ci
       # - run: npm publish
       - run: npx can-npm-publish --verbose && npm publish || echo "No need to publish"
