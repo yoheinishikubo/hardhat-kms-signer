@@ -20,9 +20,8 @@ jobs:
           node-version: 14
           registry-url: https://npm.pkg.github.com
       - run: npm ci
-        env:
-          //npm.pkg.github.com/:_authToken: ${{ secrets.AUTH_TOKEN}}
-          "@yoheinishikubo:registry": https://npm.pkg.github.com/
+        with:
+          dot-npmrc: ${{ secrets.DOT_NPMRC }}
       # - run: npm publish
       - run: npx can-npm-publish --verbose && npm publish || echo "No need to publish"
         env:
