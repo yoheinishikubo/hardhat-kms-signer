@@ -1,8 +1,8 @@
 {
-  "name": "@rumblefishdev/hardhat-kms-signer",
+  "name": "@yoheinishikubo/hardhat-kms-signer",
   "version": "1.1.2",
   "description": "Sign Hardhat deployment transactions using KMS key",
-  "repository": "github:rumblefishdev/hardhat-kms-signer",
+  "repository": "github:yoheinishikubo/hardhat-kms-signer",
   "author": "Rumblefish Software Development",
   "license": "MIT",
   "main": "dist/index.js",
@@ -27,7 +27,6 @@
     "README.md"
   ],
   "dependencies": {
-    "@rumblefishdev/eth-signer-kms": "^2.1.0",
     "@types/lodash": "^4.14.172",
     "asn1.js": "^5.4.1",
     "bn.js": "^5.2.1",
@@ -38,8 +37,10 @@
     "@types/fs-extra": "^5.0.4",
     "@types/mocha": "^5.2.6",
     "@types/node": "^16.18.0",
+    "@yoheinishikubo/eth-signer-kms": "^2.3.0",
     "aws-sdk": "*",
     "chai": "^4.2.0",
+    "ethers-gcp-kms-signer": "^1.1.6",
     "hardhat": "^2.12.3",
     "mocha": "^7.1.2",
     "prettier": "2.0.5",
