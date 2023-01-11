@@ -11,7 +11,7 @@ export interface GcpKmsSignerCredentials {
 declare module "hardhat/types/config" {
   export interface HttpNetworkUserConfig {
     kmsKeyId?: string;
-    cpKmsSignerCredentials?: GcpKmsSignerCredentials;
+    gcpKmsSignerCredentials?: GcpKmsSignerCredentials;
     minMaxFeePerGas?: string | number;
     minMaxPriorityFeePerGas?: string | number;
   }
