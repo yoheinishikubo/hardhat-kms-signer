@@ -275,15 +275,31 @@ export class GCPSigner extends ProviderWrapperWithChainId {
       const [address, typedDataJsonString] = params as [string, string];
       validateSender(address);
 
+      // 1. Parse the full typed data JSON
       const typedData: TypedData = JSON.parse(typedDataJsonString);
 
-      // ethers.js utility handles EIP-712 encoding and hashing
+      // 2. **CRITICAL STEP:** Create a copy of the types and remove EIP712Domain
+      //    The original `typedData.types` object received from the client *should*
+      //    contain EIP712Domain as per the spec. We remove it specifically for
+      //    the ethers.js low-level hash function.
+      const types = { ...typedData.types }; // Create a shallow copy
+
+      // Ensure the primaryType exists in the parsed data
+      if (!typedData.primaryType || !types[typedData.primaryType]) {
+        throw new Error("Invalid typed data: Missing or invalid primaryType.");
+      }
+
+      // Remove EIP712Domain if it exists
+      delete types.EIP712Domain;
+
+      // 3. Hash using the separated domain, the *modified* types, and the message
       const hash = utils._TypedDataEncoder.hash(
         typedData.domain,
-        typedData.types,
+        types, // Pass the modified types object (without EIP712Domain)
         typedData.message
       );
 
+      // 4. Sign the resulting hash
       return this._signDigest(hash);
     } else if (
       args.method === "eth_accounts" ||
