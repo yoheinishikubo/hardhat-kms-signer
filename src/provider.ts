@@ -62,7 +62,7 @@ export class KMSSigner extends ProviderWrapperWithChainId {
       const [txRequest] = validateParams(params, rpcTransactionRequest);
       if (
         txRequest.from &&
-        utils.getAddress(utils.toUtf8String(txRequest.from)) !==
+        utils.getAddress(utils.hexlify(txRequest.from)) !==
           utils.getAddress(sender)
       ) {
         throw new Error(
@@ -215,7 +215,7 @@ export class GCPSigner extends ProviderWrapperWithChainId {
       const [txRequest] = validateParams(params, rpcTransactionRequest);
       if (
         txRequest.from &&
-        utils.getAddress(utils.toUtf8String(txRequest.from)) !==
+        utils.getAddress(utils.hexlify(txRequest.from)) !==
           utils.getAddress(sender)
       ) {
         throw new Error(
