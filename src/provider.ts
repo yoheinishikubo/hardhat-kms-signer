@@ -7,12 +7,15 @@ import {
   getPublicKey,
   getEthereumAddress,
   requestKmsSignature,
-  determineCorrectV
-} from 'ethers-gcp-kms-signer/dist/util/gcp-kms-utils'
+  determineCorrectV,
+} from "ethers-gcp-kms-signer/dist/util/gcp-kms-utils";
 
 import { KMS } from "aws-sdk";
 import { BigNumber, utils } from "ethers";
-import { TypedDataDomain, TypedDataField } from "@ethersproject/abstract-signer"; // For EIP-712 types
+import {
+  TypedDataDomain,
+  TypedDataField,
+} from "@ethersproject/abstract-signer"; // For EIP-712 types
 import { keccak256, toUtf8Bytes } from "ethers/lib/utils"; // Import toUtf8Bytes
 import { rpcTransactionRequest } from "hardhat/internal/core/jsonrpc/types/input/transactionRequest";
 import { validateParams } from "hardhat/internal/core/jsonrpc/types/input/validation";
@@ -48,17 +51,22 @@ export class KMSSigner extends ProviderWrapperWithChainId {
 
     // Validate sender address if provided in params for signing methods
     const validateSender = (addressFromParams: string) => {
-        if (utils.getAddress(addressFromParams) !== utils.getAddress(sender)) {
-            throw new Error(
-              `Requested sender (${addressFromParams}) does not match KMS key address (${sender})`
-            );
-        }
-    }
+      if (utils.getAddress(addressFromParams) !== utils.getAddress(sender)) {
+        throw new Error(
+          `Requested sender (${addressFromParams}) does not match KMS key address (${sender})`
+        );
+      }
+    };
 
     if (method === "eth_sendTransaction") {
       const [txRequest] = validateParams(params, rpcTransactionRequest);
-      if (txRequest.from && utils.getAddress(txRequest.from) !== utils.getAddress(sender)) {
-         throw new Error(`Requested sender (${txRequest.from}) does not match KMS key address (${sender})`);
+      if (
+        txRequest.from &&
+        utils.getAddress(txRequest.from.toString()) !== utils.getAddress(sender)
+      ) {
+        throw new Error(
+          `Requested sender (${txRequest.from}) does not match KMS key address (${sender})`
+        );
       }
 
       const tx = await utils.resolveProperties(txRequest);
@@ -97,34 +105,32 @@ export class KMSSigner extends ProviderWrapperWithChainId {
         params: [rawTx],
       });
     } else if (method === "personal_sign") {
-        // Params usually are [message, address]
-        const [messageHex, address] = params as [string, string];
-        validateSender(address);
+      // Params usually are [message, address]
+      const [messageHex, address] = params as [string, string];
+      validateSender(address);
 
-        const messageBytes = utils.arrayify(messageHex);
-        const messagePrefix = `\x19Ethereum Signed Message:\n${messageBytes.length}`;
-        const prefixBytes = toUtf8Bytes(messagePrefix);
-        const messageToSign = utils.concat([prefixBytes, messageBytes]);
-        const hash = keccak256(messageToSign);
+      const messageBytes = utils.arrayify(messageHex);
+      const messagePrefix = `\x19Ethereum Signed Message:\n${messageBytes.length}`;
+      const prefixBytes = toUtf8Bytes(messagePrefix);
+      const messageToSign = utils.concat([prefixBytes, messageBytes]);
+      const hash = keccak256(messageToSign);
 
-        return this._signDigest(hash);
-
+      return this._signDigest(hash);
     } else if (method === "eth_signTypedData_v4") {
-        // Params usually are [address, typedDataJsonString]
-        const [address, typedDataJsonString] = params as [string, string];
-        validateSender(address);
+      // Params usually are [address, typedDataJsonString]
+      const [address, typedDataJsonString] = params as [string, string];
+      validateSender(address);
 
-        const typedData: TypedData = JSON.parse(typedDataJsonString);
+      const typedData: TypedData = JSON.parse(typedDataJsonString);
 
-        // ethers.js utility handles EIP-712 encoding and hashing
-        const hash = utils._TypedDataEncoder.hash(
-            typedData.domain,
-            typedData.types,
-            typedData.message
-        );
+      // ethers.js utility handles EIP-712 encoding and hashing
+      const hash = utils._TypedDataEncoder.hash(
+        typedData.domain,
+        typedData.types,
+        typedData.message
+      );
 
-        return this._signDigest(hash);
-
+      return this._signDigest(hash);
     } else if (
       args.method === "eth_accounts" ||
       args.method === "eth_requestAccounts"
@@ -157,20 +163,20 @@ export class KMSSigner extends ProviderWrapperWithChainId {
 
   // Helper to sign an arbitrary digest (hash)
   private async _signDigest(digest: string): Promise<string> {
-      const sender = await this._getSender(); // Ensure sender is available
-      // createSignature from @yoheinishikubo/eth-signer-kms already returns
-      // the joined signature {r, s, v} needed by ethers
-      const sig = await createSignature({
-          kmsInstance: this.kmsInstance,
-          keyId: this.kmsKeyId,
-          message: digest, // Pass the digest directly
-          address: sender,
-      });
+    const sender = await this._getSender(); // Ensure sender is available
+    // createSignature from @yoheinishikubo/eth-signer-kms already returns
+    // the joined signature {r, s, v} needed by ethers
+    const sig = await createSignature({
+      kmsInstance: this.kmsInstance,
+      keyId: this.kmsKeyId,
+      message: digest, // Pass the digest directly
+      address: sender,
+    });
 
-      // createSignature should return the full signature string including 'v'
-      // If it only returns {r, s}, you'd need to reconstruct 'v' and join.
-      // Assuming it returns the full signature string like '0x...'
-      return utils.joinSignature(sig); // Ensure it's in the correct format
+    // createSignature should return the full signature string including 'v'
+    // If it only returns {r, s}, you'd need to reconstruct 'v' and join.
+    // Assuming it returns the full signature string like '0x...'
+    return utils.joinSignature(sig); // Ensure it's in the correct format
   }
 }
 
@@ -197,17 +203,22 @@ export class GCPSigner extends ProviderWrapperWithChainId {
 
     // Validate sender address if provided in params for signing methods
     const validateSender = (addressFromParams: string) => {
-        if (utils.getAddress(addressFromParams) !== utils.getAddress(sender)) {
-            throw new Error(
-              `Requested sender (${addressFromParams}) does not match KMS key address (${sender})`
-            );
-        }
-    }
+      if (utils.getAddress(addressFromParams) !== utils.getAddress(sender)) {
+        throw new Error(
+          `Requested sender (${addressFromParams}) does not match KMS key address (${sender})`
+        );
+      }
+    };
 
     if (method === "eth_sendTransaction") {
       const [txRequest] = validateParams(params, rpcTransactionRequest);
-       if (txRequest.from && utils.getAddress(txRequest.from) !== utils.getAddress(sender)) {
-         throw new Error(`Requested sender (${txRequest.from}) does not match KMS key address (${sender})`);
+      if (
+        txRequest.from &&
+        utils.getAddress(txRequest.from.toString()) !== utils.getAddress(sender)
+      ) {
+        throw new Error(
+          `Requested sender (${txRequest.from}) does not match KMS key address (${sender})`
+        );
       }
 
       const tx = await utils.resolveProperties(txRequest);
@@ -246,34 +257,32 @@ export class GCPSigner extends ProviderWrapperWithChainId {
         params: [rawTx],
       });
     } else if (method === "personal_sign") {
-        // Params are [message, address]
-        const [messageHex, address] = params as [string, string];
-        validateSender(address);
+      // Params are [message, address]
+      const [messageHex, address] = params as [string, string];
+      validateSender(address);
 
-        const messageBytes = utils.arrayify(messageHex);
-        const messagePrefix = `\x19Ethereum Signed Message:\n${messageBytes.length}`;
-        const prefixBytes = toUtf8Bytes(messagePrefix);
-        const messageToSign = utils.concat([prefixBytes, messageBytes]);
-        const hash = keccak256(messageToSign);
+      const messageBytes = utils.arrayify(messageHex);
+      const messagePrefix = `\x19Ethereum Signed Message:\n${messageBytes.length}`;
+      const prefixBytes = toUtf8Bytes(messagePrefix);
+      const messageToSign = utils.concat([prefixBytes, messageBytes]);
+      const hash = keccak256(messageToSign);
 
-        return this._signDigest(hash);
-
+      return this._signDigest(hash);
     } else if (method === "eth_signTypedData_v4") {
-        // Params are [address, typedDataJsonString]
-        const [address, typedDataJsonString] = params as [string, string];
-        validateSender(address);
+      // Params are [address, typedDataJsonString]
+      const [address, typedDataJsonString] = params as [string, string];
+      validateSender(address);
 
-        const typedData: TypedData = JSON.parse(typedDataJsonString);
+      const typedData: TypedData = JSON.parse(typedDataJsonString);
 
-        // ethers.js utility handles EIP-712 encoding and hashing
-        const hash = utils._TypedDataEncoder.hash(
-            typedData.domain,
-            typedData.types,
-            typedData.message
-        );
+      // ethers.js utility handles EIP-712 encoding and hashing
+      const hash = utils._TypedDataEncoder.hash(
+        typedData.domain,
+        typedData.types,
+        typedData.message
+      );
 
-        return this._signDigest(hash);
-
+      return this._signDigest(hash);
     } else if (
       args.method === "eth_accounts" ||
       args.method === "eth_requestAccounts"
@@ -308,7 +317,9 @@ export class GCPSigner extends ProviderWrapperWithChainId {
     // Ensure digest is 32 bytes hex string
     const digestBuffer = Buffer.from(utils.arrayify(digestString)); // Convert hex string digest to Buffer
     if (digestBuffer.length !== 32) {
-        throw new Error(`Invalid digest length. Expected 32 bytes, got ${digestBuffer.length}`);
+      throw new Error(
+        `Invalid digest length. Expected 32 bytes, got ${digestBuffer.length}`
+      );
     }
     const sig = await requestKmsSignature(digestBuffer, this.kmsCredentials); // Pass Buffer
     const ethAddr = await this._getSender();
@@ -316,8 +327,8 @@ export class GCPSigner extends ProviderWrapperWithChainId {
     const { v } = determineCorrectV(digestBuffer, sig.r, sig.s, ethAddr);
     return utils.joinSignature({
       v,
-      r: `0x${sig.r.toString('hex')}`,
-      s: `0x${sig.s.toString('hex')}`
+      r: `0x${sig.r.toString("hex")}`,
+      s: `0x${sig.s.toString("hex")}`,
     });
   }
 }
