@@ -62,7 +62,8 @@ export class KMSSigner extends ProviderWrapperWithChainId {
       const [txRequest] = validateParams(params, rpcTransactionRequest);
       if (
         txRequest.from &&
-        utils.getAddress(txRequest.from.toString()) !== utils.getAddress(sender)
+        utils.getAddress(utils.toUtf8String(txRequest.from)) !==
+          utils.getAddress(sender)
       ) {
         throw new Error(
           `Requested sender (${txRequest.from}) does not match KMS key address (${sender})`
@@ -214,7 +215,8 @@ export class GCPSigner extends ProviderWrapperWithChainId {
       const [txRequest] = validateParams(params, rpcTransactionRequest);
       if (
         txRequest.from &&
-        utils.getAddress(txRequest.from.toString()) !== utils.getAddress(sender)
+        utils.getAddress(utils.toUtf8String(txRequest.from)) !==
+          utils.getAddress(sender)
       ) {
         throw new Error(
           `Requested sender (${txRequest.from}) does not match KMS key address (${sender})`

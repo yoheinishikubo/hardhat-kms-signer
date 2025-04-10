@@ -1,6 +1,6 @@
 {
   "name": "@yoheinishikubo/hardhat-kms-signer",
-  "version": "1.2.5",
+  "version": "1.2.6",
   "description": "Sign Hardhat deployment transactions using KMS key",
   "repository": "github:yoheinishikubo/hardhat-kms-signer",
   "author": "Rumblefish Software Development",
