@@ -63,3 +63,4 @@ typings/
 .env
 yarn.lock
 .npmrc
+bun.lock

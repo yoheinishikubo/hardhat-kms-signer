@@ -10,7 +10,7 @@ import {
   determineCorrectV,
 } from "ethers-gcp-kms-signer/dist/util/gcp-kms-utils";
 
-import { KMS } from "aws-sdk";
+import { KMS } from "@aws-sdk/client-kms";
 import { BigNumber, utils } from "ethers";
 import {
   TypedDataDomain,
